@@ -371,4 +371,85 @@ package body Gnoga.Client.Files is
       end if;
    end On_Message;
 
+   --------------
+   --  Create  --
+   --------------
+
+   procedure Create
+     (Writer : in out File_Writer_Type;
+      Window : in     Gnoga.Gui.Window.Window_Type)
+   is
+      GID : constant String := Gnoga.Server.Connection.New_GID;
+   begin
+      Writer.Blob.Create (Window.Connection_ID, GID);
+
+      --  Simulate calling Attach, without adding to the message Queue.
+      --  This is to allow the Writer object to "mirror" the Blob object
+      Writer.Connection_ID (Window.Connection_ID);
+      Writer.ID (GID, Gnoga. Types.Gnoga_ID);
+   end Create;
+
+   ---------------------
+   --  Reset_Content  --
+   ---------------------
+
+   procedure Reset_Content (Object : in out File_Writer_Type) is
+   begin
+      Object.Blob.Reset_Content;
+   end Reset_Content;
+
+   --------------------------
+   --  Add_Binary_Content  --
+   --------------------------
+
+   procedure Add_Binary_Content
+      (Object  : in out File_Writer_Type;
+       Content : in     Gnoga.Gui.Blob.Byte_Array)
+   is begin
+      Object.Blob.Add_Binary_Content (Content);
+   end Add_Binary_Content;
+
+   ------------------------
+   --  Add_UTF8_Content  --
+   ------------------------
+
+   procedure Add_UTF8_Content
+      (Object  : in out File_Writer_Type;
+       Content : in     String)
+   is begin
+      Object.Blob.Add_UTF8_Content (Content);
+   end Add_UTF8_Content;
+
+   -----------------------------
+   --  Write_Content_To_File  --
+   -----------------------------
+
+   procedure Write_Content_To_File
+      (Object   : in File_Writer_Type;
+       Filename : in String)
+   is
+      Blob   : constant String := Object.Blob.Script_Accessor;
+
+      --  1. Create a file stream from the File_Writer_Type Blob content
+      --  2. Create a temporary anchored link
+      --  3. Assign the file stream to the anchored link
+      --  4. Simulate a click on the link
+      --  5. Wait some time then do cleanup
+      Script : constant String :=
+            "(function(){"
+         &  "   var file = window.URL.createObjectURL(" & Blob & ");"
+         &  "   var link = document.createElement('a');"
+         &  "   link.download = '" & Filename & "';"
+         &  "   link.href = file;"
+         &  "   link.click();"
+         &  "   setTimeout(() => {"
+         &  "      link.remove();"
+         &  "      window.URL.revokeObjectURL(file);"
+         &  "   }, 100);"
+         &  "})();";
+   begin
+      --  Gnoga.Log (Script);
+      Gnoga.Server.Connection.Execute_Script (Object.Connection_ID, Script);
+   end Write_Content_To_File;
+
 end Gnoga.Client.Files;

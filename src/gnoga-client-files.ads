@@ -36,6 +36,7 @@
 ------------------------------------------------------------------------------
 
 with Gnoga.Gui.Base;
+with Gnoga.Gui.Blob;
 with Gnoga.Gui.Element.Form;
 with Gnoga.Gui.Window;
 
@@ -182,6 +183,60 @@ package Gnoga.Client.Files is
       Message : in     String);
    --  Called on receiving any event from the reader.
 
+   -------------------------------------------------------------------------
+   --  File_Writer_Type
+   -------------------------------------------------------------------------
+
+   --  The File_Writer_Type object lets web applications write stored
+   --  content to a file of the user's choosing
+
+   type File_Writer_Type is new Gnoga.Gui.Base.Base_Type with private;
+   type File_Writer_Access is access all File_Writer_Type;
+   type Pointer_To_File_Writer_Class is access all File_Writer_Type'Class;
+
+   -------------------------------------------------------------------------
+   --  File_File_Writer_TypeReader_Type - Creation Methods
+   -------------------------------------------------------------------------
+
+   procedure Create
+     (Writer : in out File_Writer_Type;
+      Window : in     Gnoga.Gui.Window.Window_Type);
+   --  Create writer associated to the user window
+
+   -------------------------------------------------------------------------
+   --  File_Writer_Type - Methods
+   -------------------------------------------------------------------------
+
+   procedure Reset_Content (Object : in out File_Writer_Type);
+   --  Clears any stored data in the File_Writer_Type object
+
+   subtype Byte       is Gnoga.Gui.Blob.Byte;
+   subtype Byte_Array is Gnoga.Gui.Blob.Byte_Array;
+   --  Types for raw binary data.  They are defined as:
+   --     type Byte is mod 2 ** 8
+   --        with Size => 8;
+   --     type Byte_Array is array (Positive range <>) of Byte
+   --        with Component_Size => Byte'Size;
+
+   procedure Add_Binary_Content
+      (Object  : in out File_Writer_Type;
+       Content : in     Gnoga.Gui.Blob.Byte_Array);
+   --  Adds raw binary content to the File_Writer_Type object, using
+   --  an append operation
+
+   procedure Add_UTF8_Content
+      (Object  : in out File_Writer_Type;
+       Content : in     String);
+   --  Adds Gnoga.String content to the File_Writer_Type, encoded
+   --  as UTF8 data, using an append operation
+
+   procedure Write_Content_To_File
+      (Object   : in File_Writer_Type;
+       Filename : in String);
+   --  Prompts the user to save the contents of the
+   --  File_Writer_Type object, using the supplied
+   --  filename as the default value.
+
 private
    type File_Reader_Type is new Gnoga.Gui.Base.Base_Type with record
       On_Abort_Event      : File_Reader_Event := null;
@@ -190,5 +245,9 @@ private
       On_Load_End_Event   : File_Reader_Event := null;
       On_Load_Start_Event : File_Reader_Event := null;
       On_Progress_Event   : File_Reader_Event := null;
+   end record;
+
+   type File_Writer_Type is new Gnoga.Gui.Base.Base_Type with record
+      Blob : Gnoga.Gui.Blob.Blob_Type;
    end record;
 end Gnoga.Client.Files;
