@@ -62,7 +62,7 @@ procedure File_Writer is
       Bad_Anchor.Click;
    exception
       when E : others => 
-         Gnoga.Log(UxStrings.From_ASCII("Excecption: " & Ada.Exceptions.Exception_Message(E)));
+         Gnoga.Log(UxStrings.From_ASCII("Exception: " & Ada.Exceptions.Exception_Message(E)));
    end On_Bad_Click;
 begin
    
